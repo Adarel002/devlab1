@@ -1,0 +1,11 @@
+Task Manager deployed successfully!
+
+Frontend: http://$(minikube ip):{{ .Values.frontend.service.nodePort }}
+Backend:  http://$(minikube ip):{{ .Values.backend.service.nodePort }}
+API Docs: http://$(minikube ip):{{ .Values.backend.service.nodePort }}/docs
+
+To upgrade replicas:
+  helm upgrade {{ .Release.Name }} ./helm/task-manager --set backend.replicas=2
+
+To rollback:
+  helm rollback {{ .Release.Name }} 1

@@ -1,0 +1,31 @@
+# ── Backend ───────────────────────────────────────────────────
+backend:
+  image: task-manager-backend
+  tag: latest
+  pullPolicy: Never
+  replicas: 1
+  port: 8000
+  service:
+    type: NodePort
+    nodePort: 30800
+
+# ── Frontend ──────────────────────────────────────────────────
+frontend:
+  image: task-manager-frontend
+  tag: latest
+  pullPolicy: Never
+  replicas: 1
+  port: 80
+  service:
+    type: NodePort
+    nodePort: 30080
+
+# ── PostgreSQL (bitnami chart values) ─────────────────────────
+postgresql:
+  auth:
+    username: postgres
+    password: postgres
+    database: taskmanager
+  primary:
+    persistence:
+      enabled: false
