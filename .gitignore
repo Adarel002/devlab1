@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+test.db
+
+# Node
+node_modules/
+build/
+.env.local
+
+# Docker
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
