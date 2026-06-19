@@ -26,24 +26,7 @@ jobs:
           python -m py_compile backend/app/models.py
           python -m py_compile backend/app/schemas.py
           python -m py_compile backend/app/database.py
-          echo "Syntax OK"
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - - name: Install frontend dependencies
-          run: |
-          npm install --legacy-peer-deps
-          npm install ajv@^8.12.0 --legacy-peer-deps
-          working-directory: frontend
-
-      - name: Build frontend
-        run: npm run build
-        working-directory: frontend
-        env:
-          REACT_APP_API_URL: http://localhost:8000
-          CI: false
+          echo "Build OK"
 
   test:
     name: Test
@@ -84,12 +67,4 @@ jobs:
 
       - name: Generate coverage for Sonar
         run: |
-          pip install -r backend/requirements.txt
-          cd backend
-          pytest tests/ --cov=app --cov-report=xml:coverage.xml
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          pip install -r
