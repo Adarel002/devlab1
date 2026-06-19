@@ -13,7 +13,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-models.Base.metadata.create_all(bind=database.engine)
+@app.on_event("startup")
+async def startup():
+    models.Base.metadata.create_all(bind=database.engine)
 
 
 def get_db():
