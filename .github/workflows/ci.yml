@@ -40,16 +40,12 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r backend/requirements.txt
+        run: pip install fastapi uvicorn sqlalchemy pytest pytest-cov httpx pydantic
 
-      - - name: Run tests
-          run: |
-            cd backend
-            echo "DATABASE_URL=$DATABASE_URL"
-            python -c "from app.database import DATABASE_URL; print('DB URL:', DATABASE_URL)"
-            pytest tests/ -v --cov=app --cov-report=xml:coverage.xml
-          env:
-            DATABASE_URL: ""
+      - name: Run tests
+        run: |
+          cd backend
+          pytest tests/ -v --cov=app --cov-report=xml:coverage.xml
 
       - uses: actions/upload-artifact@v4
         with:
@@ -71,4 +67,12 @@ jobs:
 
       - name: Generate coverage for Sonar
         run: |
-          pip install -r
+          pip install fastapi uvicorn sqlalchemy pytest pytest-cov httpx pydantic
+          cd backend
+          pytest tests/ --cov=app --cov-report=xml:coverage.xml
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
