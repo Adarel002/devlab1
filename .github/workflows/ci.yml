@@ -42,10 +42,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
 
-      - name: Run tests
-        run: |
-          cd backend
-          pytest tests/ -v --cov=app --cov-report=xml:coverage.xml
+      - - name: Run tests
+          run: |
+            cd backend
+            echo "DATABASE_URL=$DATABASE_URL"
+            python -c "from app.database import DATABASE_URL; print('DB URL:', DATABASE_URL)"
+            pytest tests/ -v --cov=app --cov-report=xml:coverage.xml
+          env:
+            DATABASE_URL: ""
 
       - uses: actions/upload-artifact@v4
         with:
