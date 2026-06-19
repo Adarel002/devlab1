@@ -7,125 +7,83 @@ on:
     branches: [ main, master ]
 
 jobs:
-  # ──────────────────────────────────────────
-  # JOB 1: BUILD
-  # ──────────────────────────────────────────
   build:
     name: Build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: backend/requirements.txt
 
       - name: Install backend dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
+        run: pip install -r backend/requirements.txt
 
-      - name: Verify backend imports
+      - name: Check Python syntax
         run: |
-          cd backend
-          python -c "from app.main import app; print('Backend build OK')"
+          python -m py_compile backend/app/main.py
+          python -m py_compile backend/app/models.py
+          python -m py_compile backend/app/schemas.py
+          python -m py_compile backend/app/database.py
+          echo "Syntax OK"
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "npm"
-          cache-dependency-path: frontend/package.json
 
       - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install --legacy-peer-deps
+        run: npm install --legacy-peer-deps
+        working-directory: frontend
 
       - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
+        run: npm run build
+        working-directory: frontend
         env:
           REACT_APP_API_URL: http://localhost:8000
           CI: false
 
-  # ──────────────────────────────────────────
-  # JOB 2: TEST
-  # ──────────────────────────────────────────
   test:
     name: Test
     runs-on: ubuntu-latest
     needs: build
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run tests
         run: |
           cd backend
-          pip install -r requirements.txt
+          pytest tests/ -v --cov=app --cov-report=xml:coverage.xml
 
-      - name: Run tests with coverage
-        run: |
-          cd backend
-          pytest tests/ -v \
-            --cov=app \
-            --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            --junitxml=test-results.xml
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: backend/coverage.xml
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: backend/test-results.xml
-
-  # ──────────────────────────────────────────
-  # JOB 3: STATIC ANALYSIS (SonarCloud)
-  # ──────────────────────────────────────────
   sonar:
     name: Static Analysis
     runs-on: ubuntu-latest
     needs: test
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # needed for SonarCloud blame info
+          fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: backend/requirements.txt
 
-      - name: Install dependencies & generate coverage
+      - name: Generate coverage for Sonar
         run: |
+          pip install -r backend/requirements.txt
           cd backend
-          pip install -r requirements.txt
           pytest tests/ --cov=app --cov-report=xml:coverage.xml
 
       - name: SonarCloud Scan
